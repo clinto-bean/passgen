@@ -1,0 +1,27 @@
+# Node.js dependencies
+/node_modules
+
+# Vite build output
+/dist
+
+# IDE and editor files
+/.vscode
+/.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.user
+*.sln.docstates
+
+# TypeScript build output
+/.tscache
+
+# Tailwind CSS build output
+/.cache
+/tailwind.config.js
+
+# Environment variables file
+/.env
+
