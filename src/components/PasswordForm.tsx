@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import CreatePassword from "@/api/v1/CreatePassword.ts"
 import { useState } from "react"
+import { checkboxStyle } from "@/styling"
 
 export default function Component() {
   const [length, setLength] = useState(8)
@@ -45,7 +46,7 @@ export default function Component() {
             <Checkbox
               defaultChecked
               id='lowercase'
-              className='border-black border-2 shadow-sm bg-cyan-200'
+              className={checkboxStyle}
               onClick={() => {
                 setLower(!lower)
               }}
@@ -56,7 +57,7 @@ export default function Component() {
             <Checkbox
               defaultChecked
               id='uppercase'
-              className='border-black border-2 shadow-sm bg-cyan-200'
+              className={checkboxStyle}
               onClick={() => {
                 setUpper(!upper)
               }}
@@ -66,7 +67,7 @@ export default function Component() {
             </Label>
             <Checkbox
               id='numbers'
-              className='border-black border-2 shadow-sm bg-cyan-200'
+              className={checkboxStyle}
               onClick={() => {
                 setNums(!nums)
               }}
@@ -76,7 +77,7 @@ export default function Component() {
             </Label>
             <Checkbox
               id='symbols'
-              className='border-black border-2 shadow-sm bg-cyan-200'
+              className={checkboxStyle}
               onClick={() => {
                 setSyms(!syms)
               }}
@@ -87,53 +88,77 @@ export default function Component() {
           </div>
         </div>
       </div>
-      <Label className='flex justify-center items-center gap-4 text-xl'>
-        Streamer Mode{" "}
-        <Checkbox
-          id='streamer'
-          className='border-black border-2 shadow-sm bg-red-600 text-white w-8 h-8'
-        />
-      </Label>
 
-      <div className='grid gap-2'>
+      <div className='grid gap-2 pt-4 pb-2'>
         <Textarea
           id='password'
           placeholder={pass}
           readOnly
           rows={1}
-          className='border-black border-2 shadow-sm bg-red-300 text-black placeholder:text-black text-xl font-extrabold text-wrap text-center'
+          className='border-black border-2 shadow-sm bg-rose-300 text-black placeholder:text-black text-xl font-extrabold text-wrap text-center'
         />
         <Button
           className='w-full text-lg border-black border-2 shadow-sm bg-yellow-300 transition-all hover:bg-yellow-400 hover:shadow-lg active:scale-[102%] active:bg-yellow-500 active:translate-y-[2px] font-bold'
           variant='outline'
           onClick={(e) => {
             e.preventDefault()
-            const newPass = CreatePassword({
-              lower,
-              upper,
-              nums,
-              syms,
-              length,
-            })
-            setPass(newPass)
             const output = document.getElementById(
               "password"
             ) as HTMLTextAreaElement
-            output.value = newPass
-            console.log(`Password: ${newPass}`)
+
+            try {
+              const newPass = CreatePassword({
+                lower,
+                upper,
+                nums,
+                syms,
+                length,
+              })
+              setPass(newPass)
+              output.value = newPass
+            } catch (e: unknown) {
+              output.value = `Error, try again.`
+              console.log(e)
+              output.classList.remove("bg-rose-300")
+              output.classList.add("bg-red-600")
+              output.classList.add("text-yellow-300")
+              setTimeout(() => {
+                output.value = "********"
+                output.classList.remove("bg-red-600")
+                output.classList.add("bg-rose-300")
+                output.classList.remove("text-yellow-300")
+              }, 1500)
+            }
           }}>
           Generate
         </Button>
         <Button
           className='w-full text-lg border-black border-2 shadow-sm bg-blue-300 transition-all hover:bg-blue-400 hover:shadow-lg active:scale-[102%] active:bg-blue-500 active:translate-y-[2px] font-bold'
           variant='outline'
+          id='copyButton'
           onClick={(e) => {
             e.preventDefault()
+
             const output = document.getElementById(
               "password"
             ) as HTMLTextAreaElement
-            output.select()
-            document.execCommand("copy")
+            const button = document.getElementById(
+              "copyButton"
+            ) as HTMLButtonElement
+
+            navigator.clipboard
+              .writeText(output.value)
+              .then(() => {
+                button.innerText = "Copied! ✔️"
+                button.style.backgroundColor = "#00EE00"
+                setTimeout(() => {
+                  button.innerText = "Copy to clipboard"
+                  button.style.backgroundColor = "#93c5fd"
+                }, 1500)
+              })
+              .catch((e) => {
+                console.error(`Error: ${e.message}`)
+              })
           }}>
           Copy to clipboard
         </Button>
