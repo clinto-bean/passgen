@@ -1,15 +1,23 @@
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import CreatePassword from "@/api/v1/CreatePassword.ts"
+import { Label } from "@/components/ui/Label"
+import { Input } from "@/components/ui/Input"
+import { Checkbox } from "@/components/ui/Checkbox"
+import { Button } from "@/components/ui/Button"
+import { Textarea } from "@/components/ui/Textarea"
+import generatePassword from "@/api/v1/generatePassword"
 import { useState } from "react"
-import { checkboxStyle } from "@/styling"
+import {
+  PasswordOptionCheckboxStyle as CheckboxStyle,
+  CopyValueButtonStyle,
+  GeneratorButtonStyle,
+  DefaultButtonStyle,
+  ErrorButtonStyle,
+  SuccessButtonStyle,
+} from "@/styling"
+import { logError as Log } from "@/api/v1/logError"
 
 export default function Component() {
   const [length, setLength] = useState(8)
-  const [pass, setPass] = useState("********")
+  const [pass, setPass] = useState("")
   const [lower, setLower] = useState(true)
   const [upper, setUpper] = useState(true)
   const [nums, setNums] = useState(false)
@@ -27,9 +35,8 @@ export default function Component() {
             min='8'
             max='32'
             type='number'
-            className='bg-violet-300 border-2 border-black text-center text-2xl'
             placeholder='8'
-            onChange={() => {
+            onInput={() => {
               setLength(
                 parseInt(
                   (document.getElementById("length") as HTMLInputElement).value
@@ -42,123 +49,115 @@ export default function Component() {
           <Label className='justify-center w-full flex p-4 text-xl'>
             Options
           </Label>
-          <div className='flex items-center gap-2 text-lg'>
+          <div id='PasswordOptions' className='flex items-center gap-2 text-lg'>
             <Checkbox
               defaultChecked
               id='lowercase'
-              className={checkboxStyle}
+              className={CheckboxStyle}
               onClick={() => {
                 setLower(!lower)
               }}
             />
-            <Label className='leading-none text-lg' htmlFor='lowercase'>
-              Lowercase
-            </Label>
+            <Label htmlFor='lowercase'>Lowercase</Label>
             <Checkbox
               defaultChecked
               id='uppercase'
-              className={checkboxStyle}
+              className={CheckboxStyle}
               onClick={() => {
                 setUpper(!upper)
               }}
             />
-            <Label className='leading-none text-lg' htmlFor='uppercase'>
-              Uppercase
-            </Label>
+            <Label htmlFor='uppercase'>Uppercase</Label>
             <Checkbox
               id='numbers'
-              className={checkboxStyle}
+              className={CheckboxStyle}
               onClick={() => {
                 setNums(!nums)
               }}
             />
-            <Label className='leading-none text-lg' htmlFor='numbers'>
-              Numbers
-            </Label>
+            <Label htmlFor='numbers'>Numbers</Label>
             <Checkbox
               id='symbols'
-              className={checkboxStyle}
+              className={CheckboxStyle}
               onClick={() => {
                 setSyms(!syms)
               }}
             />
-            <Label className='leading-none text-lg' htmlFor='symbols'>
-              Symbols
-            </Label>
+            <Label htmlFor='symbols'>Symbols</Label>
           </div>
         </div>
       </div>
 
       <div className='grid gap-2 pt-4 pb-2'>
         <Textarea
-          id='password'
-          placeholder={pass}
+          id='output'
+          placeholder='PassGen: Your Password Generator'
           readOnly
-          rows={1}
           className='border-black border-2 shadow-sm bg-rose-300 text-black placeholder:text-black text-xl font-extrabold text-wrap text-center'
         />
         <Button
-          className='w-full text-lg border-black border-2 shadow-sm bg-yellow-300 transition-all hover:bg-yellow-400 hover:shadow-lg active:scale-[102%] active:bg-yellow-500 active:translate-y-[2px] font-bold'
+          className={`${DefaultButtonStyle} ${GeneratorButtonStyle}`}
+          id='generateButton'
           variant='outline'
           onClick={(e) => {
             e.preventDefault()
             const output = document.getElementById(
-              "password"
+              "output"
             ) as HTMLTextAreaElement
-
+            const generate = document.getElementById(
+              "generateButton"
+            ) as HTMLButtonElement
             try {
-              const newPass = CreatePassword({
-                lower,
-                upper,
-                nums,
-                syms,
-                length,
-              })
-              setPass(newPass)
-              output.value = newPass
+              setPass(
+                generatePassword({
+                  lower,
+                  upper,
+                  nums,
+                  syms,
+                  length,
+                })
+              )
             } catch (e: unknown) {
-              output.value = `Error, try again.`
-              console.log(e)
-              output.classList.remove("bg-rose-300")
-              output.classList.add("bg-red-600")
-              output.classList.add("text-yellow-300")
+              try {
+                Log(output, e as Error)
+              } catch (e: unknown) {
+                console.error(e)
+              }
+              generate.className = `${DefaultButtonStyle} ${ErrorButtonStyle}`
+              generate.textContent = "Error!"
               setTimeout(() => {
-                output.value = "********"
-                output.classList.remove("bg-red-600")
-                output.classList.add("bg-rose-300")
-                output.classList.remove("text-yellow-300")
+                generate.textContent = "Generate"
+                generate.className = `${DefaultButtonStyle} ${GeneratorButtonStyle}`
               }, 1500)
             }
+            output.textContent = pass
+            generate.textContent = "Generated ✔️"
+            generate.className = `${DefaultButtonStyle} ${SuccessButtonStyle}`
+            generate.disabled = true
+            setTimeout(() => {
+              generate.textContent = "Generate"
+              generate.className = `${DefaultButtonStyle} ${GeneratorButtonStyle}`
+              generate.disabled = false
+            }, 1500)
           }}>
-          Generate
+          Start
         </Button>
         <Button
-          className='w-full text-lg border-black border-2 shadow-sm bg-blue-300 transition-all hover:bg-blue-400 hover:shadow-lg active:scale-[102%] active:bg-blue-500 active:translate-y-[2px] font-bold'
-          variant='outline'
+          className={`${DefaultButtonStyle} ${CopyValueButtonStyle}`}
           id='copyButton'
           onClick={(e) => {
             e.preventDefault()
 
-            const output = document.getElementById(
-              "password"
-            ) as HTMLTextAreaElement
-            const button = document.getElementById(
+            const copy = document.getElementById(
               "copyButton"
             ) as HTMLButtonElement
-
-            navigator.clipboard
-              .writeText(output.value)
-              .then(() => {
-                button.innerText = "Copied! ✔️"
-                button.style.backgroundColor = "#00EE00"
-                setTimeout(() => {
-                  button.innerText = "Copy to clipboard"
-                  button.style.backgroundColor = "#93c5fd"
-                }, 1500)
-              })
-              .catch((e) => {
-                console.error(`Error: ${e.message}`)
-              })
+            navigator.clipboard.writeText(pass)
+            copy.textContent = "Copied! ✔️"
+            copy.className = `${DefaultButtonStyle} ${SuccessButtonStyle}`
+            setTimeout(() => {
+              copy.textContent = "Copy to clipboard"
+              copy.className = `${DefaultButtonStyle} ${CopyValueButtonStyle}`
+            }, 1500)
           }}>
           Copy to clipboard
         </Button>

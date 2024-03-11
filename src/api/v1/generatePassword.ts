@@ -6,10 +6,18 @@ type PasswordOptions = {
   length: number
 }
 
-export default function CreatePassword(args: PasswordOptions) {
+export default function generatePassword(passwordArgs: PasswordOptions) {
   let password: string = ""
 
-  const { lower, upper, nums, syms, length } = args
+  const { lower, upper, nums, syms, length } = passwordArgs
+
+  if (length < 8 || length > 32 || !length) {
+    throw new Error("Length must be between 8 and 32 characters.")
+  }
+
+  if (!lower && !upper && !nums && !syms) {
+    throw new Error(`Must include one of the options.`)
+  }
 
   const lowercase = "abcdefghijklmnopqrstuvwxyz"
   const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -24,8 +32,7 @@ export default function CreatePassword(args: PasswordOptions) {
   syms && charArray.push(symbols)
 
   for (let i = 0; i < length; i++) {
-    const charSet: string =
-      charArray[Math.floor(Math.random() * charArray.length)]
+    const charSet = charArray[Math.floor(Math.random() * charArray.length)]
     const char = charSet[Math.floor(Math.random() * charSet.length)]
     password += char
   }
