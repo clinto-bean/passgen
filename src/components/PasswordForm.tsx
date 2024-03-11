@@ -22,10 +22,15 @@ export default function Component() {
   const [upper, setUpper] = useState(true)
   const [nums, setNums] = useState(false)
   const [syms, setSyms] = useState(false)
+  const output = document.getElementById("output") as HTMLTextAreaElement
+  const generate = document.getElementById(
+    "generateButton"
+  ) as HTMLButtonElement
+  const copy = document.getElementById("copyButton") as HTMLButtonElement
 
   useEffect(() => {
-    const output = document.getElementById("output") as HTMLTextAreaElement
-    output.textContent = pass
+    const display = document.getElementById("output") as HTMLTextAreaElement
+    display.textContent = pass
   }, [pass])
 
   return (
@@ -106,12 +111,7 @@ export default function Component() {
           variant='outline'
           onClick={(e) => {
             e.preventDefault()
-            const output = document.getElementById(
-              "output"
-            ) as HTMLTextAreaElement
-            const generate = document.getElementById(
-              "generateButton"
-            ) as HTMLButtonElement
+
             try {
               setPass(
                 generatePassword({
@@ -153,9 +153,6 @@ export default function Component() {
           onClick={(e) => {
             e.preventDefault()
 
-            const copy = document.getElementById(
-              "copyButton"
-            ) as HTMLButtonElement
             navigator.clipboard.writeText(pass)
             copy.textContent = "Copied! ✔️"
             copy.className = `${DefaultButtonStyle} ${SuccessButtonStyle}`
