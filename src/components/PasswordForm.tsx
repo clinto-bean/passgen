@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/Checkbox"
 import { Button } from "@/components/ui/Button"
 import { Textarea } from "@/components/ui/Textarea"
 import generatePassword from "@/api/v1/generatePassword"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   PasswordOptionCheckboxStyle as CheckboxStyle,
   CopyValueButtonStyle,
@@ -22,6 +22,11 @@ export default function Component() {
   const [upper, setUpper] = useState(true)
   const [nums, setNums] = useState(false)
   const [syms, setSyms] = useState(false)
+
+  useEffect(() => {
+    const output = document.getElementById("output") as HTMLTextAreaElement
+    output.textContent = pass
+  }, [pass])
 
   return (
     <form className='flex flex-col items-center space-y-4 p-4 border-[4px] shadow-xl border-black rounded-lg overflow-hidden bg-green-300 text-xl'>
@@ -130,7 +135,6 @@ export default function Component() {
                 generate.className = `${DefaultButtonStyle} ${GeneratorButtonStyle}`
               }, 1500)
             }
-            output.textContent = pass
             generate.textContent = "Generated ✔️"
             generate.className = `${DefaultButtonStyle} ${SuccessButtonStyle}`
             generate.disabled = true
@@ -145,6 +149,7 @@ export default function Component() {
         <Button
           className={`${DefaultButtonStyle} ${CopyValueButtonStyle}`}
           id='copyButton'
+          disabled={!pass}
           onClick={(e) => {
             e.preventDefault()
 
